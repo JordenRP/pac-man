@@ -5,18 +5,7 @@ export default Ember.Mixin.create({
   frameCycle: 1,
   framesPerMovement: 30,
 
-  // 0 is a blank space
-  // 1 is a wall
-  // 2 is a pellet
-  grid: [
-    [2, 2, 2, 2, 2, 2, 2, 1],
-    [2, 1, 2, 1, 2, 2, 2, 1],
-    [2, 2, 1, 2, 2, 2, 2, 1],
-    [2, 2, 2, 2, 2, 2, 2, 1],
-    [2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 2, 2, 2, 1],
-  ],
-  squareSize: 40,
+
 
   ctx: Ember.computed(function(){
     let canvas = document.getElementById("myCanvas");
@@ -26,7 +15,7 @@ export default Ember.Mixin.create({
 
   drawCircle(x, y, radiusDivisor, direction) {
     let ctx = this.get('ctx')
-    let squareSize = this.get('squareSize');
+    let squareSize = this.get('level.squareSize');
 
     let pixelX = (x + 1/2 + this.offsetFor('x', direction)) * squareSize;
     let pixelY = (y + 1/2 + this.offsetFor('y', direction)) * squareSize;

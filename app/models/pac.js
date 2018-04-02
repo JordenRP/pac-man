@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import SharedStuff from '../mixins/shared-stuff';
+import Level from '../models/level';
 
 export default Ember.Object.extend(SharedStuff, {
   direction: 'down',
@@ -7,6 +8,10 @@ export default Ember.Object.extend(SharedStuff, {
 
   x: 1,
   y: 2,
+  
+  level: null,
+  x: null,
+  y: null,
   
   move(){
   if(this.animationCompleted()){
@@ -56,10 +61,19 @@ finalizeMove(){
     let nextX = this.nextCoordinate('x', direction);
     let nextY = this.nextCoordinate('y', direction);
 
-    return this.get(`grid.${nextY}.${nextX}`);
+    return this.get(`level.grid.${nextY}.${nextX}`);
   },
 
   nextCoordinate(coordinate, direction){
     return this.get(coordinate) + this.get(`directions.${direction}.${coordinate}`);
   },
+  
+  
+  restart(){
+  this.set('x', this.get('level.startingPac.x'));
+  this.set('y', this.get('level.startingPac.y'));
+  this.set('frameCycle', 0);
+  this.set('direction', 'stopped')
+},
+  
 })
