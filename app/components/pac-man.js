@@ -4,18 +4,31 @@ import Pac from '../models/pac';
 import SharedStuff from '../mixins/shared-stuff';
 import Level from '../models/level';
 import Level2 from '../models/level2';
+import Ghost from '../models/ghost';
 
 
 export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
+  
   didInsertElement() {
-    let level = Level.create()
+    let level = Level2.create()
     this.set('level', level)
     let pac = Pac.create({
       level: level,
       x: level.get('startingPac.x'),
       y: level.get('startingPac.y')
-    })
-    this.set('pac', pac)
+    });
+    
+    this.set('pac', pac);
+    
+     let ghost = Ghost.create({
+      level: level,
+      x: 0,
+      y: 0,
+      pac: pac
+    });
+    
+    this.set('ghost', ghost);
+   
     this.loop();
   },
 
@@ -40,7 +53,7 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
 
       if (this.level.isComplete()) {
         this.incrementProperty('levelNumber')
-        this.restartLevel()
+        this.restart()
       }
     }
   },
@@ -55,19 +68,19 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
   },
 
 
+loop(){
+  this.get('pac').move();
+  this.get('ghost').move();
 
-  loop() {
-    this.get('pac').move();
+  this.processAnyPellets();
 
-    this.processAnyPellets();
+  this.clearScreen();
+  this.drawGrid();
+  this.get('pac').draw();
+  this.get('ghost').draw();
 
-    this.clearScreen();
-    this.drawGrid();
-    this.get('pac').draw();
-
-    Ember.run.later(this, this.loop, 1000 / 60);
-  },
-
+  Ember.run.later(this, this.loop, 1000/60);
+},
 
   keyboardShortcuts: {
     up() {
