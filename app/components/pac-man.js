@@ -10,16 +10,22 @@ import Ghost from '../models/ghost';
 export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
 
   didInsertElement() {
-    let level = Level2.create()
+    this.startNewLevel();
+
+    this.loop();
+  },
+
+  startNewLevel() {
+    let level = this.loadNewLevel();
+    level.restart()
     this.set('level', level)
+
     let pac = Pac.create({
       level: level,
       x: level.get('startingPac.x'),
       y: level.get('startingPac.y')
     });
-
     this.set('pac', pac);
-
 
     let ghosts = level.get('startingGhosts').map((startingPosition) => {
       return Ghost.create({
@@ -29,10 +35,7 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
         pac: pac
       })
     })
-
     this.set('ghosts', ghosts)
-
-    this.loop();
   },
 
 
@@ -40,6 +43,14 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
   score: 0,
 
   lives: 3,
+
+  levels: [Level2, Level],
+
+  loadNewLevel() {
+    let levelIndex = (this.get('levelNumber') - 1) % this.get('levels.length')
+    let levelClass = this.get('levels')[levelIndex]
+    return levelClass.create()
+  },
 
   clearScreen() {
     let ctx = this.get('ctx');
@@ -55,11 +66,13 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
       grid[y][x] = 0;
       this.incrementProperty('score')
 
-      if (this.level.isComplete()) {
+      if (this.get('level').isComplete()) {
         this.incrementProperty('levelNumber')
-        this.get('level').restart();
-        this.restart()
+        this.startNewLevel()
       }
+    } else if (grid[y][x] == 3) {
+      grid[y][x] = 0;
+      this.set('pac.powerMode', true)
     }
   },
 
@@ -141,8 +154,16 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
         if (cell == 2) {
           this.drawPellet(columnIndex, rowIndex);
         }
+        if (cell == 3) {
+          this.drawPowerPellet(columnIndex, rowIndex)
+        }
       })
     })
+  },
+
+  drawPowerPellet(x, y) {
+    let radiusDivisor = 4;
+    this.drawCircle(x, y, radiusDivisor, 'stopped', 'green')
   },
 
   drawPellet(x, y) {
@@ -150,14 +171,15 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
     this.drawCircle(x, y, radiusDivisor, 'stopped');
   },
 
-    restart() {
-      if (this.get('lives') <= 0) {
-        this.set('score', 0)
-        this.set('lives', 3)
-        this.get('level').restart();
-      }
-      this.get('pac').restart();
-      this.get('ghosts').forEach(ghost => ghost.restart());
-    },
+  restart() {
+    if (this.get('lives') <= 0) {
+      this.set('score', 0)
+      this.set('lives', 3)
+      this.set('levelNumber', 1)
+      this.startNewLevel()
+    }
+    this.get('pac').restart();
+    this.get('ghosts').forEach(ghost => ghost.restart());
+  },
 
 });

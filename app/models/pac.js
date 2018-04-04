@@ -13,11 +13,15 @@ export default Ember.Object.extend(SharedStuff, Movement, {
   x: null,
   y: null,
 
+  powerMode: false,
+
   draw() {
     let x = this.get('x');
     let y = this.get('y');
     let radiusDivisor = 2;
-    this.drawCircle(x, y, radiusDivisor, this.get('direction'), '#ffff00');
+    let color = this.get('powerMode') ? '#AF0' : '#FE0';
+    this.drawCircle(x, y, radiusDivisor, this.get('direction'), color);
+
   },
 
   restart() {
