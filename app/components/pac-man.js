@@ -8,7 +8,7 @@ import Ghost from '../models/ghost';
 
 
 export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
-  
+
   didInsertElement() {
     let level = Level2.create()
     this.set('level', level)
@@ -17,18 +17,21 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
       x: level.get('startingPac.x'),
       y: level.get('startingPac.y')
     });
-    
+
     this.set('pac', pac);
-    
-     let ghost = Ghost.create({
-      level: level,
-      x: 0,
-      y: 0,
-      pac: pac
-    });
-    
-    this.set('ghost', ghost);
-   
+
+
+    let ghosts = level.get('startingGhosts').map((startingPosition) => {
+      return Ghost.create({
+        level: level,
+        x: startingPosition.x,
+        y: startingPosition.y,
+        pac: pac
+      })
+    })
+
+    this.set('ghosts', ghosts)
+
     this.loop();
   },
 
@@ -36,6 +39,7 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
   levelNumber: 1,
   score: 0,
 
+  lives: 3,
 
   clearScreen() {
     let ctx = this.get('ctx');
@@ -53,6 +57,7 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
 
       if (this.level.isComplete()) {
         this.incrementProperty('levelNumber')
+        this.get('level').restart();
         this.restart()
       }
     }
@@ -67,20 +72,37 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
     }
   },
 
+  collidedWithGhost() {
+    return this.get('ghosts').any((ghost) => {
+      return this.get('pac.x') == ghost.get('x') &&
+        this.get('pac.y') == ghost.get('y')
+    })
+  },
 
-loop(){
-  this.get('pac').move();
-  this.get('ghost').move();
 
-  this.processAnyPellets();
+  loop() {
+    this.get('pac').move();
+    this.get('ghosts').forEach((ghost) => {
+      ghost.move()
+    });
 
-  this.clearScreen();
-  this.drawGrid();
-  this.get('pac').draw();
-  this.get('ghost').draw();
+    this.processAnyPellets();
 
-  Ember.run.later(this, this.loop, 1000/60);
-},
+    this.clearScreen();
+    this.drawGrid();
+    this.get('pac').draw();
+    this.get('ghosts').forEach((ghost) => {
+      ghost.draw()
+    });
+
+
+    if (this.collidedWithGhost()) {
+      this.decrementProperty('lives');
+      this.restart();
+    };
+
+    Ember.run.later(this, this.loop, 1000 / 60);
+  },
 
   keyboardShortcuts: {
     up() {
@@ -128,10 +150,14 @@ loop(){
     this.drawCircle(x, y, radiusDivisor, 'stopped');
   },
 
-
-  restart() {
-    this.get('pac').restart();
-    this.get('level').restart();
-  }
+    restart() {
+      if (this.get('lives') <= 0) {
+        this.set('score', 0)
+        this.set('lives', 3)
+        this.get('level').restart();
+      }
+      this.get('pac').restart();
+      this.get('ghosts').forEach(ghost => ghost.restart());
+    },
 
 });

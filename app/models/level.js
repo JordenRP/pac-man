@@ -12,48 +12,56 @@ export default Ember.Object.extend({
     [2, 2, 2, 2, 2, 2, 2, 1],
     [1, 2, 2, 2, 2, 2, 2, 1],
   ],
-  
+
   startingPac: {
-  x: 4,
-  y: 1
+    x: 4,
+    y: 1
   },
 
+  startingGhosts: [{
+    x: 0,
+    y: 0
+}, {
+    x: 0,
+    y: 3
+}],
+
   squareSize: 40,
-  width: Ember.computed(function(){
+  width: Ember.computed(function () {
     return this.get('grid.firstObject.length')
   }),
-  height: Ember.computed(function(){
+  height: Ember.computed(function () {
     return this.get('grid.length');
   }),
-  pixelWidth: Ember.computed(function(){
+  pixelWidth: Ember.computed(function () {
     return this.get('width') * this.get('squareSize');
   }),
-  pixelHeight: Ember.computed(function() {
+  pixelHeight: Ember.computed(function () {
     return this.get('height') * this.get('squareSize');
   }),
 
-  isComplete(){
+  isComplete() {
     let hasPelletsLeft = false;
     let grid = this.get('grid');
 
-    grid.forEach((row)=>{
-      row.forEach((cell)=>{
-        if(cell == 2){
+    grid.forEach((row) => {
+      row.forEach((cell) => {
+        if (cell == 2) {
           hasPelletsLeft = true
         }
       })
     })
     return !hasPelletsLeft;
   },
-  
-  restart(){
-  let grid = this.get('grid');
-  grid.forEach((row, rowIndex)=>{
-    row.forEach((cell, columnIndex)=>{
-      if(cell == 0){
-        grid[rowIndex][columnIndex] = 2;
-      }
+
+  restart() {
+    let grid = this.get('grid');
+    grid.forEach((row, rowIndex) => {
+      row.forEach((cell, columnIndex) => {
+        if (cell == 0) {
+          grid[rowIndex][columnIndex] = 2;
+        }
+      });
     });
-  });
   },
 })

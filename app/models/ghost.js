@@ -48,4 +48,16 @@ export default Ember.Object.extend(SharedStuff, Movement, {
     this.set('direction', bestDirection)
   },
 
+  init() {
+    this.set('startingX', this.get('x'));
+    this.set('startingY', this.get('y'));
+    return this._super(...arguments);
+  },
+  restart() {
+    this.set('x', this.get('startingX'));
+    this.set('y', this.get('startingY'));
+    this.set('frameCycle', 0);
+    this.set('direction', 'stopped')
+  },
+
 })
