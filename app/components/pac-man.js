@@ -72,7 +72,7 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
       }
     } else if (grid[y][x] == 3) {
       grid[y][x] = 0;
-      this.set('pac.powerMode', true)
+      this.set('pac.powerModeTime', this.get('pac.maxPowerModeTime'));
     }
   },
 
@@ -85,10 +85,10 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
     }
   },
 
-  collidedWithGhost() {
-    return this.get('ghosts').any((ghost) => {
-      return this.get('pac.x') == ghost.get('x') &&
-        this.get('pac.y') == ghost.get('y')
+  detectGhostCollisions() {
+    return this.get('ghosts').filter((ghost) => {
+      return (this.get('pac.x') == ghost.get('x') &&
+        this.get('pac.y') == ghost.get('y'))
     })
   },
 
@@ -108,11 +108,15 @@ export default Ember.Component.extend(KeyboardShortcuts, SharedStuff, {
       ghost.draw()
     });
 
-
-    if (this.collidedWithGhost()) {
-      this.decrementProperty('lives');
-      this.restart();
-    };
+    let ghostCollisions = this.detectGhostCollisions();
+    if (ghostCollisions.length > 0) {
+      if (this.get('pac.powerMode')) {
+        ghostCollisions.forEach(ghost => ghost.retreat())
+      } else {
+        this.decrementProperty('lives');
+        this.restart();
+      }
+    }
 
     Ember.run.later(this, this.loop, 1000 / 60);
   },

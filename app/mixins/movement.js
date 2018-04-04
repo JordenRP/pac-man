@@ -5,9 +5,13 @@ export default Ember.Mixin.create({
   y: null,
   level: null,
   direction: 'down',
+  
+  timers: [],
 
   move() {
-    if (this.animationCompleted()) {
+     if(this.get('removed')){
+    // do nothing, it's gone
+  } else if(this.animationCompleted()){
       this.finalizeMove();
       this.changeDirection();
     } else if (this.get('direction') == 'stopped') {
@@ -15,6 +19,8 @@ export default Ember.Mixin.create({
     } else {
       this.incrementProperty('frameCycle');
     }
+    
+    this.tickTimers();
   },
 
   animationCompleted() {
@@ -39,6 +45,14 @@ export default Ember.Mixin.create({
 
     return this.get(`level.grid.${nextY}.${nextX}`);
   },
+  
+  tickTimers(){
+  this.get('timers').forEach((timerName)=>{
+    if(this.get(timerName) > 0){
+      this.decrementProperty(timerName)
+    }
+  })
+},
 
   nextCoordinate(coordinate, direction) {
     let next = this.get(coordinate) + this.get(`directions.${direction}.${coordinate}`);
